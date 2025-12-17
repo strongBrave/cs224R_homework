@@ -1,0 +1,14 @@
+mujoco==2.3.3
+gym==0.25.2
+tensorboard==2.19.0
+tensorboardX==2.6.2.2
+matplotlib==3.10.1
+ipython==9.0.2
+moviepy==1.0.3
+swig==4.3.0
+moviepy==1.0.3
+pyvirtualdisplay==3.0
+torch==2.1.0
+opencv-python==4.11.0.86
+ipdb==0.13.13
+box2d-py==2.3.8
