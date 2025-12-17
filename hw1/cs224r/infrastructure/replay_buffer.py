@@ -127,8 +127,20 @@ class ReplayBuffer():
         ## (i.e., not different indices from each array)
         ## HINT 3: look at the sample_recent_data function below
         ## Note that rews, next_obs, and terminals are not used for BC
+        collected_length = self.obs.shape[0]
 
-        raise NotImplementedError
+        perm = np.random.permutation(self.max_size)
+        perm = perm[:batch_size]
+
+        idxs = perm % collected_length
+
+        return (
+            self.obs[idxs],
+            self.acs[idxs],
+            self.rews[idxs],
+            self.next_obs[idxs],
+            self.terminals[idxs]
+        )
     
     def sample_recent_data(self, batch_size=1):
         """

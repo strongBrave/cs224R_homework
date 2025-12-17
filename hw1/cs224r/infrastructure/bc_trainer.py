@@ -18,6 +18,7 @@ import torch
 import gym
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from cs224r.infrastructure import pytorch_util as ptu
 from cs224r.infrastructure.logger import Logger
@@ -206,7 +207,14 @@ class BCTrainer:
         # HINT4: You want each of these collected rollouts to be of length self.params['ep_len']
 
         print("\nCollecting data to be used for training...")
-        paths, envsteps_this_batch = TODO
+        if iter == 0:
+            with open(load_initial_expertdata, "rb") as f:
+                paths = pickle.load(f)
+            
+            for path in paths:
+                envsteps_this_batch += len(path['observation'])
+        else:
+            paths, envsteps_this_batch = utils.sample_trajectories(self.env, collect_policy, self.params['batch_size'], self.params['ep_len'], False)
 
         # collect more rollouts with the same policy, to be saved as videos in tensorboard
         # note: here, we collect MAX_NVIDEO rollouts, each of length MAX_VIDEO_LEN
@@ -230,12 +238,12 @@ class BCTrainer:
             # TODO sample some data from the data buffer
             # HINT1: use the agent's sample function
             # HINT2: how much data = self.params['train_batch_size']
-            ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = TODO
+            ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = self.agent.sample(self.params['train_batch_size'])
 
             # TODO use the sampled data to train an agent
             # HINT: use the agent's train function
             # HINT: keep the agent's training log for debugging
-            train_log = TODO
+            train_log = self.agent.train(ob_batch, ac_batch)
             all_logs.append(train_log)
         return all_logs
 
@@ -252,8 +260,11 @@ class BCTrainer:
         # TODO relabel collected obsevations (from our policy) with labels from an expert policy
         # HINT: query the policy (using the get_action function) with paths[i]["observation"]
         # and replace paths[i]["action"] with these expert labels
+        for path in paths:
+            relabel_actions = expert_policy.get_action(path["observation"])
+            path["action"] = relabel_actions
 
-        raise NotImplementedError
+        return paths
 
     ####################################
     ####################################
@@ -322,6 +333,19 @@ class BCTrainer:
             logs["TimeSinceStart"] = time.time() - self.start_time
             last_log = training_logs[-1]  # Only use the last log for now from additional training logs
             logs.update(last_log)
+
+            train_losses = []
+            for training_log in training_logs:
+                train_losses.append(training_log['Training Loss'])
+            
+            fig = plt.figure()
+            plt.plot(train_losses)
+            plt.title(f'Training Loss (Iteration {itr})')
+            plt.xlabel('Gradient Step')
+            plt.ylabel('Loss')          
+
+            self.logger.log_figure(fig, 'Train_Loss_Curve', itr, "0")  
+            plt.close(fig)
 
 
             if itr == 0:
