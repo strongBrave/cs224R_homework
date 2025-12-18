@@ -7,4 +7,5 @@ output/
 wandb/
 
 **/data/
+**/Logdir/
 .mujoco/
