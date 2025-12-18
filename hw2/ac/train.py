@@ -113,7 +113,7 @@ class Workspace:
 
         while eval_until_episode(episode):
             time_step = self.eval_env.reset()
-            self.video_recorder.init(self.eval_env, enabled=(episode == 0))
+            self.video_recorder.init(self.eval_env, enabled=True)
             while not time_step.last():
                 with torch.no_grad(), utils.eval_mode(self.agent):
                     action = self.agent.act(time_step.observation,
@@ -180,6 +180,9 @@ class Workspace:
             # try to evaluate
             if eval_every_step(self.global_step):
                 self.eval()
+                # save video
+                if self.global_step % (3 * self.cfg.eval_every_frames) == 0:
+                    self.video_recorder.save(f"eval_{self.global_step}.mp4")
 
             # sample action
             with torch.no_grad(), utils.eval_mode(self.agent):

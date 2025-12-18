@@ -117,7 +117,36 @@ class ACAgent:
             batch, self.device)
 
         ### YOUR CODE HERE ###
+        self.critic_opt.zero_grad()
 
+        # 1. Sample next state actions from the policy
+        next_dist = self.actor(next_obs)
+        pred_next_action = next_dist.sample()
+
+        # 2. compute the Bellman targets
+        Q_vals = self.critic_target(next_obs, pred_next_action) # list of (B, 1) Q_vals
+        number_critic = len(Q_vals)
+        sample_idxs = random.sample(range(number_critic), 2)
+        Q_val1 = Q_vals[sample_idxs[0]]
+        Q_val2 = Q_vals[sample_idxs[1]]
+
+        targets = reward + discount * torch.minimum(Q_val1, Q_val2)
+
+        # 3. Compute loss
+        preds = self.critic(obs, action) # list of (B,1) Q_vals
+        preds = torch.stack(preds, dim=0) # (n_critic, B, 1)
+
+        loss = preds - targets.unsqueeze(0).detach() # (n_critic, B, 1)
+        loss = torch.mean(torch.square(loss))
+
+        # 4. Gradient descent
+        loss.backward()
+        self.critic_opt.step()
+
+        # 5. Update target network
+        utils.soft_update_params(self.critic, self.critic_target, tau=self.critic_target_tau)
+
+        metrics['critic_loss'] = loss.item()
 
         #####################
         return metrics
@@ -151,7 +180,20 @@ class ACAgent:
             batch, self.device)
 
         ### YOUR CODE HERE ###
+        self.actor_opt.zero_grad()
 
+        # 1. Sample actions
+        dist = self.actor(obs)
+        action = dist.sample()
+
+        Q_vals = self.critic(obs, action)
+        Q_vals = torch.concat(Q_vals, dim=0)
+
+        loss = torch.mean(-Q_vals)
+        loss.backward()
+        self.actor_opt.step()
+
+        metrics['actor_loss'] = loss.item()
 
         return metrics
 
@@ -184,6 +226,16 @@ class ACAgent:
         obs, action, _, _, _ = utils.to_torch(batch, self.device)
 
         ### YOUR CODE HERE ###
+        self.actor_opt.zero_grad()
+        dist = self.actor(obs)
+        pred_action = dist.sample()
 
+        loss = torch.square((action - pred_action))
+        loss = torch.mean(loss)
+        
+        loss.backward()
+        self.actor_opt.step()
+
+        metrics["bc_loss"] = loss.item()
 
         return metrics
