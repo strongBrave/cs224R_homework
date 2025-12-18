@@ -92,7 +92,7 @@ def main():
     # of at least 10,000.
     parser.add_argument('--batch_size', type=int, default=1000)
     # Amount of evaluation data collected (in the env) for logging metrics
-    parser.add_argument('--eval_batch_size', type=int, default=1000)
+    parser.add_argument('--eval_batch_size', type=int, default=10000)
     # Number of sampled data points to be used per gradient/train step
     parser.add_argument('--train_batch_size', type=int, default=100)
 
