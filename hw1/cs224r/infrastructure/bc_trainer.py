@@ -207,7 +207,8 @@ class BCTrainer:
         # HINT4: You want each of these collected rollouts to be of length self.params['ep_len']
 
         print("\nCollecting data to be used for training...")
-        if iter == 0:
+        if itr == 0:
+            envsteps_this_batch = 0
             with open(load_initial_expertdata, "rb") as f:
                 paths = pickle.load(f)
             
