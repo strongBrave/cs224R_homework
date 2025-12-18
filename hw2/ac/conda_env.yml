@@ -9,10 +9,10 @@ dependencies:
   - pyparsing=2.4.7
   - jupyterlab=3.0.14
   - scikit-image=0.18.1
-  - nvidia::cudatoolkit=11.5
-  - pytorch::pytorch
-  - pytorch::torchvision
-  - pytorch::torchaudio
+  # - nvidia::cudatoolkit=11.5
+  # - pytorch::pytorch
+  # - pytorch::torchvision
+  # - pytorch::torchaudio
   - pip:
     - termcolor==1.1.0
     - dm_control
